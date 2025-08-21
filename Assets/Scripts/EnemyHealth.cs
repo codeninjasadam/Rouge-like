@@ -12,13 +12,13 @@ public class EnemyHealth : MonoBehaviour
         currentHP = maxHP;
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int dmg)
     {
-        currentHP -= damage;
+        currentHP -= dmg;
+
         if (currentHP <= 0)
         {
             Destroy(gameObject);
         }
     }
 }
-
