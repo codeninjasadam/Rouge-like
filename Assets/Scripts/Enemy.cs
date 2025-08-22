@@ -22,4 +22,16 @@ public class Enemy : MonoBehaviour
             transform.position += (Vector3)direction * speed * Time.deltaTime;
         }
     }
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(10); // damage per hit
+            }
+        }
+    }
+
 }

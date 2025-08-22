@@ -4,21 +4,26 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
-    public int maxHP = 3;
-    private int currentHP;
+    public int health = 50;
+    public GameObject xpGemPrefab; // 👈 this shows up in Inspector now
 
-    void Start()
+    public void TakeDamage(int amount)
     {
-        currentHP = maxHP;
+        health -= amount;
+        if (health <= 0)
+        {
+            Die();
+        }
     }
 
-    public void TakeDamage(int dmg)
+    void Die()
     {
-        currentHP -= dmg;
-
-        if (currentHP <= 0)
+        // Spawn XP Gem when enemy dies
+        if (xpGemPrefab != null)
         {
-            Destroy(gameObject);
+            Instantiate(xpGemPrefab, transform.position, Quaternion.identity);
         }
+
+        Destroy(gameObject);
     }
 }
