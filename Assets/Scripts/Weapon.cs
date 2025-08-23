@@ -1,53 +1,70 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq; // for easy sorting
 
 public class Weapon : MonoBehaviour
 {
     public GameObject projectilePrefab;
-    public float fireRate = 1f; // Shoot every X seconds
-    private float timer;
+    public float fireRate = 1f;
+    public float projectileSpeed = 5f;
+    public int damage = 10;
+    private float fireCooldown;
 
-    void Update()
+    public void HandleWeapon()
     {
-        timer += Time.deltaTime;
-        if (timer >= fireRate)
+        fireCooldown -= Time.unscaledDeltaTime;
+        if (fireCooldown <= 0f)
         {
             Shoot();
-            timer = 0f;
+            fireCooldown = 1f / fireRate;
         }
-
     }
 
-    void Shoot()
-    {
-        if (projectilePrefab == null) return;
+void Shoot()
+{
+    GameObject bullet = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+    Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+    Projectile proj = bullet.GetComponent<Projectile>();
 
-        // Find all enemies in the scene
+    if (rb != null)
+    {
+        // Find all enemies
         Enemy[] enemies = FindObjectsOfType<Enemy>();
-
-        if (enemies.Length == 0)
+        if (enemies.Length > 0)
         {
-            // No enemies, just shoot to the right
-            SpawnBullet(Vector2.right);
-            return;
+            // Get closest enemy
+            Enemy closest = enemies[0];
+            float minDist = Vector2.Distance(transform.position, closest.transform.position);
+
+            foreach (Enemy e in enemies)
+            {
+                float dist = Vector2.Distance(transform.position, e.transform.position);
+                if (dist < minDist)
+                {
+                    closest = e;
+                    minDist = dist;
+                }
+            }
+
+            // Calculate direction
+            Vector2 dir = (closest.transform.position - transform.position).normalized;
+            rb.velocity = dir * proj.speed;
         }
-
-        // Pick the closest enemy
-        Transform closest = enemies
-            .OrderBy(e => Vector2.Distance(transform.position, e.transform.position))
-            .First().transform;
-
-        // Aim toward it
-        Vector2 direction = (closest.position - transform.position).normalized;
-
-        SpawnBullet(direction);
+        else
+        {
+            // No enemies: shoot forward
+            rb.velocity = transform.right * proj.speed;
+        }
     }
 
-    void SpawnBullet(Vector2 direction)
+    if (proj != null)
+        proj.damage = damage;
+}
+
+    // Leveling up weapon
+    public void UpgradeWeapon()
     {
-        GameObject bullet = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-        bullet.GetComponent<Projectile>().SetDirection(direction);
+        damage += 5;
+        fireRate += 0.2f;
     }
 }

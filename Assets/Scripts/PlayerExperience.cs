@@ -13,6 +13,8 @@ public class PlayerExperience : MonoBehaviour
 
     public Slider xpSlider;     // drag XP bar here
     public TMP_Text levelText;  // TMP instead of Text
+    public LevelUpUI levelUpUI; // assign in Inspector
+
 
     void Start()
     {
@@ -31,13 +33,23 @@ public class PlayerExperience : MonoBehaviour
         UpdateUI();
     }
 
+
+
     void LevelUp()
     {
         level++;
         currentXP -= xpToNextLevel;
         xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.5f);
+
         Debug.Log("LEVEL UP! You are now level " + level);
+
+        if (levelUpUI != null)
+            levelUpUI.ShowLevelUp();
+        else
+            Debug.LogWarning("LevelUpUI reference is missing!");
     }
+
+
 
     void UpdateUI()
     {
