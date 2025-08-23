@@ -1,57 +1,74 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using TMPro;  // <-- add this
 
 public class LevelUpUI : MonoBehaviour
 {
     public GameObject levelUpPanel;
-    public List<Button> optionButtons;
+    public Button[] upgradeButtons;
 
-    private WeaponManager weaponManager;
+    public Upgrade[] availableUpgrades; // <-- now it exists!
+
+    private PlayerExperience player;
+
 
     void Start()
     {
-        levelUpPanel.SetActive(false);
-        weaponManager = FindObjectOfType<WeaponManager>();
+        player = FindObjectOfType<PlayerExperience>();
 
-        // Assign button listeners
-        for (int i = 0; i < optionButtons.Count; i++)
-        {
-            int index = i; // capture index
-            optionButtons[i].onClick.AddListener(() => ChooseOption(index));
-        }
+        // Hide panel at start
+        levelUpPanel.SetActive(false);
     }
 
-    // Call this from PlayerExperience when leveling up
     public void ShowLevelUp()
     {
-        // Enable panel
         levelUpPanel.SetActive(true);
+        Time.timeScale = 0f; // pause the game
 
-        // Set button texts (example: can randomize upgrades)
-        for (int i = 0; i < optionButtons.Count; i++)
+        // Fill in buttons with upgrade info
+        for (int i = 0; i < upgradeButtons.Length; i++)
         {
-            optionButtons[i].GetComponentInChildren<TMP_Text>().text = "Upgrade Weapon " + (i+1);
-        }
+            if (i < availableUpgrades.Length)
+            {
+                Upgrade u = availableUpgrades[i];
 
-        // Pause game while choosing
-        Time.timeScale = 0f;
+                // Change button text
+                Text[] texts = upgradeButtons[i].GetComponentsInChildren<Text>();
+                if (texts.Length >= 2)
+                {
+                    texts[0].text = u.upgradeName;    // title
+                    texts[1].text = u.description;   // description
+                }
+
+                // Optional: set icon if using an Image
+                Image icon = upgradeButtons[i].GetComponentInChildren<Image>();
+                if (u.icon != null && icon != null)
+                    icon.sprite = u.icon;
+
+                int index = i; // capture loop variable
+                upgradeButtons[i].onClick.RemoveAllListeners();
+                upgradeButtons[i].onClick.AddListener(() => ChooseUpgrade(index));
+            }
+        }
     }
 
-    void ChooseOption(int index)
+    void ChooseUpgrade(int index)
     {
-        Time.timeScale = 1f; // unpause
+        Debug.Log("Chose upgrade: " + availableUpgrades[index].upgradeName);
 
-        // Upgrade weapon if exists
-        if (weaponManager != null && weaponManager.equippedWeapons.Count > index)
+        // Example actions
+        if (availableUpgrades[index].upgradeName == "Orbiting Weapon")
         {
-            weaponManager.equippedWeapons[index].UpgradeWeapon();
+            // spawn orbiting weapon prefab
+        }
+        else if (availableUpgrades[index].upgradeName == "Extra Health")
+        {
+            player.GetComponent<PlayerHealth>().maxHealth += 20;
         }
 
-        // Hide panel
         levelUpPanel.SetActive(false);
+        Time.timeScale = 1f; // resume game
     }
 }
